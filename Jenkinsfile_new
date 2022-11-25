@@ -56,6 +56,7 @@ pipeline {
         }
         stage('k8 deployment') {
             steps {
+               // sh 'kubectl config use-context cli-admin@xcode-test-cluster.us-east-1.eksctl.io'
                 sh 'kubectl apply -f new-kubernetes-manifests.yaml'
             }
         }
@@ -63,6 +64,6 @@ pipeline {
 }
 
  def getDockerTag(){
-    def tag = sh script: 'git rev-parse HEAD', returnStdout: true
+    def tag = sh script: 'git rev-parse --short HEAD', returnStdout: true
     return tag
 }
