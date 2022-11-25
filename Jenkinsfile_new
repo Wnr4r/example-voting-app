@@ -18,19 +18,19 @@ pipeline {
         
         stage('docker build voting app') {
             steps {
-                sh 'docker build -t tomisin /kk_votingapp_vote:${DOCKER_TAG} ./vote/'
+                sh 'docker build -t tomisin/kk_votingapp_vote:${DOCKER_TAG} ./vote/'
             }
         
         }
         stage('docker build worker app') {
             steps {
-                sh 'docker build -t tomisin /kk_votingapp_worker:${DOCKER_TAG} ./worker/'
+                sh 'docker build -t tomisin/kk_votingapp_worker:${DOCKER_TAG} ./worker/'
             }
         
         }
         stage('docker build result app') {
             steps {
-                sh 'docker build -t tomisin /kk_votingapp_result:${DOCKER_TAG} ./result/'
+                sh 'docker build -t tomisin/kk_votingapp_result:${DOCKER_TAG} ./result/'
             }
         }
         stage('login to docker hub') {
@@ -43,9 +43,9 @@ pipeline {
         }        
         stage('Push Images to Docker Hub') {
             steps {
-                sh 'docker push tomisin /kk_votingapp_vote:${DOCKER_TAG}'
-                sh 'docker push tomisin /kk_votingapp_result:${DOCKER_TAG}'
-                sh 'docker push tomisin /kk_votingapp_worker:${DOCKER_TAG}'
+                sh 'docker push tomisin/kk_votingapp_vote:${DOCKER_TAG}'
+                sh 'docker push tomisin/kk_votingapp_result:${DOCKER_TAG}'
+                sh 'docker push tomisin/kk_votingapp_worker:${DOCKER_TAG}'
             }
         }
         stage('change docker tag in manifest') {
