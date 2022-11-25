@@ -1,0 +1,68 @@
+pipeline {
+    agent any
+    environment{
+        DOCKER_TAG = getDockerTag()
+        //DOCKER_TAG = ""
+    }
+
+    stages {
+        stage('git checkout') {
+            steps {
+                git 'https://github.com/Wnr4r/example-voting-app.git'
+                
+                /*script{
+                DOCKER_TAG = sh(script: "git rev-parse HEAD ", returnStdout: true).trim()
+                }*/
+            }
+        }
+        
+        stage('docker build voting app') {
+            steps {
+                sh 'docker build -t tomisin /kk_votingapp_vote:${DOCKER_TAG} ./vote/'
+            }
+        
+        }
+        stage('docker build worker app') {
+            steps {
+                sh 'docker build -t tomisin /kk_votingapp_worker:${DOCKER_TAG} ./worker/'
+            }
+        
+        }
+        stage('docker build result app') {
+            steps {
+                sh 'docker build -t tomisin /kk_votingapp_result:${DOCKER_TAG} ./result/'
+            }
+        }
+        stage('login to docker hub') {
+            steps {
+                withCredentials([string(credentialsId: 'DOCKER_HUB_PASSWORD', variable: 'PASSWORD')]) {
+                        sh 'docker login -u tomisin -p $PASSWORD'
+                }
+                
+            }
+        }        
+        stage('Push Images to Docker Hub') {
+            steps {
+                sh 'docker push tomisin /kk_votingapp_vote:${DOCKER_TAG}'
+                sh 'docker push tomisin /kk_votingapp_result:${DOCKER_TAG}'
+                sh 'docker push tomisin /kk_votingapp_worker:${DOCKER_TAG}'
+            }
+        }
+        stage('change docker tag in manifest') {
+            steps {
+                sh "chmod +x changeTag.sh"
+                sh "./changeTag.sh ${DOCKER_TAG}"
+            }
+        }
+        stage('k8 deployment') {
+            steps {
+                sh 'kubectl apply -f new-kubernetes-manifests.yaml'
+            }
+        }
+    }
+}
+
+ def getDockerTag(){
+    def tag = sh script: 'git rev-parse HEAD', returnStdout: true
+    return tag
+}
